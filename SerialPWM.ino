@@ -1,4 +1,6 @@
 /*
+*   https://github.com/Aqvic/SerialPWM 
+* 
 *   Simple 4-bytes serial protocol: 
 *   RX: [COMMAND] [PARAM] [VALUE] [XOR]   TX: [OK|VALUE|ERROR]
 *   
