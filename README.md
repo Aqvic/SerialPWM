@@ -27,3 +27,5 @@ Set duty cycle to 50% (0x80) on first  defined pwm pin:
 Send to Arduino (hex): 00 00 80 80
 Answer from Arduino (hex): 00
 ```
+## Dependencies:
+leOS2 by Leonardo Miliani @leomil72 https://github.com/leomil72/leOS2
