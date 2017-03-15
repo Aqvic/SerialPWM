@@ -16,11 +16,13 @@
 *   
 *   Dependencies:
 *   https://github.com/leomil72/leOS2    -   leOS2 by Leonardo Miliani
+*   http://dsscircuits.com/articles/arduino-i2c-master-library  - I2C lib
 *   
 */
 
 #include <Arduino.h>
 #include <EEPROM.h>
+#include <I2C.h>
 #include "leOS2.h"
 
 // Use static const instead DEFINE. Because it respects scope and is type-safe!
@@ -31,7 +33,7 @@ static const byte PARAM   = 1;
 static const byte VALUE   = 2;
 static const byte XOR     = 3;
 
-static const byte PROTO_MAX_COMMANDS = 4;
+static const byte PROTO_MAX_COMMANDS = 6;
 static const byte PROTO_RX_BUFFER_SIZE = 4;
 
 static const byte PROTO_OK = 0x00;
@@ -44,6 +46,8 @@ static const byte PROTO_ERROR_RX_FAULT    = 0xE5;
 
 static const byte pwmPinsNumber = 4;
 static const byte pwmPins[pwmPinsNumber] = {9, 10 ,11, 5}; // manual initialization
+
+static const byte DS_RTC_ADDR = 0x68;
 
 static const byte BOARD_LED_PIN = 13;
 boolean pin13State = false;
@@ -64,8 +68,10 @@ byte setPWMFrequency(byte data[]);
 byte setPWMValue(byte data[]);
 byte getEEPROM(byte data[]);
 byte setEEPROM(byte data[]);
+byte setI2C(byte data[]);
+byte getI2C(byte data[]);
 
-byte (*proto[PROTO_MAX_COMMANDS])(byte data[]) = {setPWMValue, setPWMFrequency, getEEPROM, setEEPROM};
+byte (*proto[PROTO_MAX_COMMANDS])(byte data[]) = {setPWMValue, setPWMFrequency, getEEPROM, setEEPROM, setI2C, getI2C};
 
 bool checkXOR(byte data[]);
 
@@ -83,6 +89,8 @@ void setup() {
     
   Serial.begin(9600);
   Serial.setTimeout(100);
+
+  I2c.begin();
 
   myOS.begin();
   myOS.addTask([](){timeToBlink = true;}, myOS.convertMs(500));
@@ -167,6 +175,16 @@ byte getEEPROM(byte data[]){
 byte setEEPROM(byte data[]){
   EEPROM.update(data[PARAM], data[VALUE]);
   return EEPROM.read(data[PARAM]);
+}
+
+byte setI2C(byte data[]){
+  I2c.write(DS_RTC_ADDR, data[PARAM], data[VALUE]);
+  return getI2C(data);
+}
+
+byte getI2C(byte data[]){
+  I2c.read(DS_RTC_ADDR,data[PARAM],1); //read 1 bytes
+  return I2c.receive();
 }
 
 bool checkXOR(byte data[]){
